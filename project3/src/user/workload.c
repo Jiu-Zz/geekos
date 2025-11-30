@@ -35,24 +35,18 @@
 #include <sema.h>
 #include <string.h>
 
-#define MAX_SHORT_PROCESSES 5
-#define START_SEM_NAME "start_gate"
-
 #if !defined(NULL)
 #define NULL 0
 #endif
 
 int main(int argc, char **argv)
 {
-    int i;
     int policy = -1;
     int start;
     int elapsed;
     int quantum;
     int scr_sem;       /* sid of screen semaphore */
-    int start_sem;
-    int id_long; /* ID of child process */
-    int id_short[MAX_SHORT_PROCESSES];
+    int id1, id2, id3; /* ID of child process */
 
     if (argc == 3)
     {
@@ -79,41 +73,31 @@ int main(int argc, char **argv)
     }
 
     start = Get_Time_Of_Day();
-    Print("Test started at %d\n", start);
     scr_sem = Create_Semaphore("screen", 1);
-    start_sem = Create_Semaphore(START_SEM_NAME, 0);
 
     P(scr_sem);
     Print("************* Start Workload Generator *********\n");
     V(scr_sem);
 
-    id_long = Spawn_Program("/c/long.exe", "/c/long.exe");
+    id1 = Spawn_Program("/c/long.exe", "/c/long.exe");
     P(scr_sem);
-    Print("\nLong = %d ", id_long);
+    Print("Process Long has been created with ID = %d\n", id1);
     V(scr_sem);
 
-    for (i = 0; i < MAX_SHORT_PROCESSES; i++)
-    {
-        id_short[i] = Spawn_Program("/c/short.exe", "/c/short.exe");
-        P(scr_sem);
-        Print("\nShort %d = %d ", i+1, id_short[i]);
-        V(scr_sem);
-    }
+    id2 = Spawn_Program("/c/ping.exe", "/c/ping.exe");
 
     P(scr_sem);
-    Print("\nStart all processes\n");
+    Print("Process Ping has been created with ID = %d\n", id2);
     V(scr_sem);
 
-    for (i = 0; i < 1 + MAX_SHORT_PROCESSES; ++i)
-    {
-        V(start_sem);
-    }
+    id3 = Spawn_Program("/c/pong.exe", "/c/pong.exe");
+    P(scr_sem);
+    Print("Process Pong has been created with ID = %d\n", id3);
+    V(scr_sem);
 
-    Wait(id_long);
-    for(i = 0; i < MAX_SHORT_PROCESSES; i++)
-    {
-        Wait(id_short[i]);
-    }
+    Wait(id1);
+    Wait(id2);
+    Wait(id3);
 
     elapsed = Get_Time_Of_Day() - start;
     Print("\nTests Completed at %d\n", elapsed);

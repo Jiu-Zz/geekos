@@ -614,10 +614,6 @@ struct Kernel_Thread *Get_Next_Runnable(void)
             }
         }
     }
-    if(best->pid > 7)
-    {
-        Print("%d@%d-", best->pid, best->currentReadyQueue);
-    }
     return best;
 }
 
