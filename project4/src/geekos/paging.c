@@ -94,6 +94,7 @@ void Page_Fault_Handler(struct Interrupt_State *state)
     struct User_Context *userContext = g_currentThread->userContext;
     if (faultCode.writeFault)
     { // 写错误，缺页情况为堆栈生长到新页
+        Print_Fault_Info(address, faultCode);
         int res;
         res = Alloc_User_Page(userContext->pageDir,
                               Round_Down_To_Page(address), PAGE_SIZE);
@@ -358,4 +359,3 @@ void Read_From_Paging_File(void *paddr, ulong_t vaddr, int pagefileIndex)
     else
         KASSERT(0);
 }
-
